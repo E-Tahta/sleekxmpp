@@ -1,0 +1,3 @@
+version=3
+opts=uversionmangle=s/-Beta/~beta/;s/-RC/~rc/;s/1\.0\.0-beta5/1.0~beta5/ \
+https://github.com/fritzy/SleekXMPP/tags .*/(.*)\.tar\.gz

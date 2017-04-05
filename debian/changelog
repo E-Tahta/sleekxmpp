@@ -1,0 +1,111 @@
+sleekxmpp (1.3.1-6~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports (Closes: #838024).
+
+ -- W. Martin Borgert <debacle@debian.org>  Wed, 05 Apr 2017 19:53:41 +0000
+
+sleekxmpp (1.3.1-6) unstable; urgency=medium
+
+  * Fix CVE-2017-5591:
+    An incorrect implementation of XEP-0280: Message Carbons in slixmpp allows
+    a remote attacker to impersonate any user, including contacts, in the
+    vulnerable application's display. This allows for various kinds of social
+    engineering attacks. (Closes: #854739)
+  * Use ssl.get_protocol_name() to find out which TLS version is
+    in use (allows the latest TLS versions to be used as well as any future
+    versions). (Closes: #851900)
+
+ -- W. Martin Borgert <debacle@debian.org>  Mon, 03 Apr 2017 00:04:06 +0000
+
+sleekxmpp (1.3.1-5) unstable; urgency=medium
+
+  * use debhelper 9 compat
+  * new standards version, no changes
+  * lintian fix for debian/watch
+
+ -- W. Martin Borgert <debacle@debian.org>  Sun, 25 Dec 2016 21:28:41 +0000
+
+sleekxmpp (1.3.1-4) unstable; urgency=medium
+
+  * Use python-socks | python-socksipy instead of socksify only
+    for Build-Depends and Recommends (Closes: #810308).
+    Thanks to Scott Kitterman.
+
+ -- W. Martin Borgert <debacle@debian.org>  Sat, 09 Jan 2016 16:08:09 +0000
+
+sleekxmpp (1.3.1-3) unstable; urgency=medium
+
+  * Leave thirdparty/__init__.py (Closes: #809291). Thanks to Chris Lamb.
+
+ -- W. Martin Borgert <debacle@debian.org>  Tue, 29 Dec 2015 21:36:59 +0000
+
+sleekxmpp (1.3.1-2) unstable; urgency=medium
+
+  * Remove embedded copy of python-dateutil, recommend it instead
+  * Remove embedded copy of python-gnupg, recommend it instead
+  * Remove embedded copy of python-socksipy, recommend it instead
+  * Remove unneeded embedded copy of ordereddict
+
+ -- W. Martin Borgert <debacle@debian.org>  Wed, 23 Dec 2015 21:16:33 +0000
+
+sleekxmpp (1.3.1-1) unstable; urgency=medium
+
+  * New upstream (Closes: #665015)
+  * DPMT team maintenance
+  * Change from CDBS and gbp to dh and git-dpm
+
+ -- W. Martin Borgert <debacle@debian.org>  Tue, 22 Dec 2015 23:03:50 +0000
+
+sleekxmpp (1.0~beta5-2) unstable; urgency=low
+
+  * Bump policy compliance to standards-version 3.9.2.
+  * Improve watch file:
+    + Suppress out of order (due to oddly naming) 1.0.0 beta release.
+    + Handle RC releases.
+  * Fix recommend python-dnspython (not depend on python-dns) and
+    suggest python3-dnspython (as it is not yet in Debian).
+    Closes: bug#656466. Thanks to Scott Kitterman.
+  * Extend copyright years for debian packaging.
+
+ -- Jonas Smedegaard <dr@jones.dk>  Sun, 22 Jan 2012 15:28:56 +0100
+
+sleekxmpp (1.0~beta5-1) unstable; urgency=low
+
+  * New upstream release.
+  * Drop dpkg local-options hints from packaging source: now defaults.
+  * Update copyright file:
+    + Bump format to Subversion draft 173 of DEP5.
+    + Quote license name in comment.
+    + Add more copyright holders.
+  * Update package relations:
+    + Tighten build-dependency on cdbs.
+    + Relax build-depend unversioned on debhelper and devscripts (needed
+      versions satisfied even in oldstable).
+
+ -- Jonas Smedegaard <dr@jones.dk>  Wed, 30 Nov 2011 17:46:17 +0700
+
+sleekxmpp (1.0~beta4-3) unstable; urgency=low
+
+  * Update copyright file:
+    + Bump format to Subversion draft 173 of DEP5.
+    + Fix use wildcard Files section (not header section) for default
+      copyright/licensing.
+    + Tidy comment of GPL-2+ License section.
+
+ -- Jonas Smedegaard <dr@jones.dk>  Tue, 29 Mar 2011 10:36:27 +0200
+
+sleekxmpp (1.0~beta4-2) experimental; urgency=low
+
+  * Fix add ${python:Depends} and ${python:Provides}.
+  * Fix suppress double build-dependency on cdbs.
+  * Fix limit to Python 2.6 or newer.
+  * Declare dpendency on python-dns via dh_python{2.3}.
+
+ -- Jonas Smedegaard <dr@jones.dk>  Sat, 08 Jan 2011 23:37:30 +0100
+
+sleekxmpp (1.0~beta4-1) experimental; urgency=low
+
+  * Initial release.
+    Closes: Bug#588973.
+
+ -- Jonas Smedegaard <dr@jones.dk>  Sat, 08 Jan 2011 22:28:11 +0100

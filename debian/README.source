@@ -1,0 +1,13 @@
+debhelper+git-dpm
+-----------------
+
+This source package uses debhelper and git-dpm.  NMUs need not (but
+are encouraged to) make special use of these tools.  In particular, the
+debian/control.in file can be completely ignored.
+
+More info here:
+https://wiki.debian.org/IntroDebianPackaging
+https://wiki.debian.org/PackagingWithGit/GitDpm
+
+ -- Jonas Smedegaard <dr@jones.dk>  Mon, 18 Feb 2013 12:55:37 +0100
+    updated by W. Martin Borgert <debacle@debian.org>, 2015-12-22

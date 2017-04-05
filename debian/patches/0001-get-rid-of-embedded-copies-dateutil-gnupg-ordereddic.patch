@@ -1,0 +1,2045 @@
+From c84bd1b150b3e932145ca61ffda91fe8ccebe678 Mon Sep 17 00:00:00 2001
+From: "W. Martin Borgert" <debacle@debian.org>
+Date: Thu, 24 Dec 2015 01:40:45 +0100
+Subject: get rid of embedded copies: dateutil, gnupg, ordereddict, socks
+
+---
+ sleekxmpp/jid.py                          |    2 +-
+ sleekxmpp/plugins/xep_0004/stanza/form.py |    2 +-
+ sleekxmpp/plugins/xep_0027/gpg.py         |    2 +-
+ sleekxmpp/plugins/xep_0065/proxy.py       |    2 +-
+ sleekxmpp/plugins/xep_0071/stanza.py      |    2 +-
+ sleekxmpp/plugins/xep_0082.py             |    3 +-
+ sleekxmpp/plugins/xep_0131/stanza.py      |    2 +-
+ sleekxmpp/plugins/xep_0138.py             |    1 -
+ sleekxmpp/plugins/xep_0202/stanza.py      |    2 +-
+ sleekxmpp/stanza/stream_features.py       |    2 +-
+ sleekxmpp/thirdparty/__init__.py          |   13 +-
+ sleekxmpp/thirdparty/gnupg.py             | 1017 -----------------------------
+ sleekxmpp/thirdparty/mini_dateutil.py     |  273 --------
+ sleekxmpp/thirdparty/ordereddict.py       |  127 ----
+ sleekxmpp/thirdparty/socks.py             |  387 -----------
+ sleekxmpp/xmlstream/stanzabase.py         |    2 +-
+ tests/test_stanza_element.py              |    2 +-
+ tests/test_stanza_xep_0004.py             |    2 +-
+ 18 files changed, 14 insertions(+), 1829 deletions(-)
+ delete mode 100644 sleekxmpp/thirdparty/gnupg.py
+ delete mode 100644 sleekxmpp/thirdparty/mini_dateutil.py
+ delete mode 100644 sleekxmpp/thirdparty/ordereddict.py
+ delete mode 100644 sleekxmpp/thirdparty/socks.py
+
+diff --git a/sleekxmpp/jid.py b/sleekxmpp/jid.py
+index 613b272..86b7837 100644
+--- a/sleekxmpp/jid.py
++++ b/sleekxmpp/jid.py
+@@ -22,7 +22,7 @@ import encodings.idna
+ from copy import deepcopy
+ 
+ from sleekxmpp.util import stringprep_profiles
+-from sleekxmpp.thirdparty import OrderedDict
++from collections import OrderedDict
+ 
+ #: These characters are not allowed to appear in a JID.
+ ILLEGAL_CHARS = '\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r' + \
+diff --git a/sleekxmpp/plugins/xep_0004/stanza/form.py b/sleekxmpp/plugins/xep_0004/stanza/form.py
+index 1d73376..4c9bfe2 100644
+--- a/sleekxmpp/plugins/xep_0004/stanza/form.py
++++ b/sleekxmpp/plugins/xep_0004/stanza/form.py
+@@ -9,7 +9,7 @@
+ import copy
+ import logging
+ 
+-from sleekxmpp.thirdparty import OrderedDict
++from collections import OrderedDict
+ 
+ from sleekxmpp.xmlstream import ElementBase, ET
+ from sleekxmpp.plugins.xep_0004.stanza import FormField
+diff --git a/sleekxmpp/plugins/xep_0027/gpg.py b/sleekxmpp/plugins/xep_0027/gpg.py
+index 52c1c46..6578d5f 100644
+--- a/sleekxmpp/plugins/xep_0027/gpg.py
++++ b/sleekxmpp/plugins/xep_0027/gpg.py
+@@ -6,7 +6,7 @@
+     See the file LICENSE for copying permission.
+ """
+ 
+-from sleekxmpp.thirdparty import GPG
++from gnupg import GPG
+ 
+ from sleekxmpp.stanza import Presence, Message
+ from sleekxmpp.plugins.base import BasePlugin, register_plugin
+diff --git a/sleekxmpp/plugins/xep_0065/proxy.py b/sleekxmpp/plugins/xep_0065/proxy.py
+index d890b57..431771b 100644
+--- a/sleekxmpp/plugins/xep_0065/proxy.py
++++ b/sleekxmpp/plugins/xep_0065/proxy.py
+@@ -5,7 +5,7 @@ import socket
+ from hashlib import sha1
+ from uuid import uuid4
+ 
+-from sleekxmpp.thirdparty.socks import socksocket, PROXY_TYPE_SOCKS5
++from socks import socksocket, PROXY_TYPE_SOCKS5
+ 
+ from sleekxmpp.stanza import Iq
+ from sleekxmpp.exceptions import XMPPError
+diff --git a/sleekxmpp/plugins/xep_0071/stanza.py b/sleekxmpp/plugins/xep_0071/stanza.py
+index d5ff1a1..a2948a2 100644
+--- a/sleekxmpp/plugins/xep_0071/stanza.py
++++ b/sleekxmpp/plugins/xep_0071/stanza.py
+@@ -8,7 +8,7 @@
+ 
+ from sleekxmpp.stanza import Message
+ from sleekxmpp.util import unicode
+-from sleekxmpp.thirdparty import OrderedDict
++from collections import OrderedDict
+ from sleekxmpp.xmlstream import ElementBase, ET, register_stanza_plugin, tostring
+ 
+ 
+diff --git a/sleekxmpp/plugins/xep_0082.py b/sleekxmpp/plugins/xep_0082.py
+index 26eb68f..d89eeba 100644
+--- a/sleekxmpp/plugins/xep_0082.py
++++ b/sleekxmpp/plugins/xep_0082.py
+@@ -9,7 +9,8 @@
+ import datetime as dt
+ 
+ from sleekxmpp.plugins import BasePlugin, register_plugin
+-from sleekxmpp.thirdparty import tzutc, tzoffset, parse_iso
++from dateutil.parser import parse as parse_iso
++from dateutil.tz import tzoffset, tzutc
+ 
+ 
+ # =====================================================================
+diff --git a/sleekxmpp/plugins/xep_0131/stanza.py b/sleekxmpp/plugins/xep_0131/stanza.py
+index 347adf9..dcf970d 100644
+--- a/sleekxmpp/plugins/xep_0131/stanza.py
++++ b/sleekxmpp/plugins/xep_0131/stanza.py
+@@ -6,7 +6,7 @@
+     See the file LICENSE for copying permission.
+ """
+ 
+-from sleekxmpp.thirdparty import OrderedDict
++from collections import OrderedDict
+ from sleekxmpp.xmlstream import ET, ElementBase
+ 
+ 
+diff --git a/sleekxmpp/plugins/xep_0138.py b/sleekxmpp/plugins/xep_0138.py
+index c5d8f06..ef30151 100644
+--- a/sleekxmpp/plugins/xep_0138.py
++++ b/sleekxmpp/plugins/xep_0138.py
+@@ -10,7 +10,6 @@ import logging
+ import socket
+ import zlib
+ 
+-from sleekxmpp.thirdparty.suelta.util import bytes
+ 
+ 
+ from sleekxmpp.stanza import StreamFeatures
+diff --git a/sleekxmpp/plugins/xep_0202/stanza.py b/sleekxmpp/plugins/xep_0202/stanza.py
+index b6ccc96..9077c82 100644
+--- a/sleekxmpp/plugins/xep_0202/stanza.py
++++ b/sleekxmpp/plugins/xep_0202/stanza.py
+@@ -11,7 +11,7 @@ import datetime as dt
+ 
+ from sleekxmpp.xmlstream import ElementBase
+ from sleekxmpp.plugins import xep_0082
+-from sleekxmpp.thirdparty import tzutc, tzoffset
++from dateutil.tz import tzutc
+ 
+ 
+ class EntityTime(ElementBase):
+diff --git a/sleekxmpp/stanza/stream_features.py b/sleekxmpp/stanza/stream_features.py
+index e487721..8ba8a72 100644
+--- a/sleekxmpp/stanza/stream_features.py
++++ b/sleekxmpp/stanza/stream_features.py
+@@ -6,7 +6,7 @@
+     See the file LICENSE for copying permission.
+ """
+ 
+-from sleekxmpp.thirdparty import OrderedDict
++from collections import OrderedDict
+ from sleekxmpp.xmlstream import StanzaBase
+ 
+ 
+diff --git a/sleekxmpp/thirdparty/__init__.py b/sleekxmpp/thirdparty/__init__.py
+index 2a1db71..792d600 100644
+--- a/sleekxmpp/thirdparty/__init__.py
++++ b/sleekxmpp/thirdparty/__init__.py
+@@ -1,12 +1 @@
+-try:
+-    from collections import OrderedDict
+-except:
+-    from sleekxmpp.thirdparty.ordereddict import OrderedDict
+-
+-try:
+-    from gnupg import GPG
+-except:
+-    from sleekxmpp.thirdparty.gnupg import GPG
+-
+-from sleekxmpp.thirdparty import socks
+-from sleekxmpp.thirdparty.mini_dateutil import tzutc, tzoffset, parse_iso
++#
+diff --git a/sleekxmpp/thirdparty/gnupg.py b/sleekxmpp/thirdparty/gnupg.py
+deleted file mode 100644
+index a89289f..0000000
+--- a/sleekxmpp/thirdparty/gnupg.py
++++ /dev/null
+@@ -1,1017 +0,0 @@
+-""" A wrapper for the 'gpg' command::
+-
+-Portions of this module are derived from A.M. Kuchling's well-designed
+-GPG.py, using Richard Jones' updated version 1.3, which can be found
+-in the pycrypto CVS repository on Sourceforge:
+-
+-http://pycrypto.cvs.sourceforge.net/viewvc/pycrypto/gpg/GPG.py
+-
+-This module is *not* forward-compatible with amk's; some of the
+-old interface has changed.  For instance, since I've added decrypt
+-functionality, I elected to initialize with a 'gnupghome' argument
+-instead of 'keyring', so that gpg can find both the public and secret
+-keyrings.  I've also altered some of the returned objects in order for
+-the caller to not have to know as much about the internals of the
+-result classes.
+-
+-While the rest of ISconf is released under the GPL, I am releasing
+-this single file under the same terms that A.M. Kuchling used for
+-pycrypto.
+-
+-Steve Traugott, stevegt@terraluna.org
+-Thu Jun 23 21:27:20 PDT 2005
+-
+-This version of the module has been modified from Steve Traugott's version
+-(see http://trac.t7a.org/isconf/browser/trunk/lib/python/isconf/GPG.py) by
+-Vinay Sajip to make use of the subprocess module (Steve's version uses os.fork()
+-and so does not work on Windows). Renamed to gnupg.py to avoid confusion with
+-the previous versions.
+-
+-Modifications Copyright (C) 2008-2012 Vinay Sajip. All rights reserved.
+-
+-A unittest harness (test_gnupg.py) has also been added.
+-"""
+-import locale
+-
+-__version__ = "0.2.9"
+-__author__ = "Vinay Sajip"
+-__date__  = "$29-Mar-2012 21:12:58$"
+-
+-try:
+-    from io import StringIO
+-except ImportError:
+-    from cStringIO import StringIO
+-
+-import codecs
+-import locale
+-import logging
+-import os
+-import socket
+-from subprocess import Popen
+-from subprocess import PIPE
+-import sys
+-import threading
+-
+-try:
+-    import logging.NullHandler as NullHandler
+-except ImportError:
+-    class NullHandler(logging.Handler):
+-        def handle(self, record):
+-            pass
+-try:
+-    unicode
+-    _py3k = False
+-except NameError:
+-    _py3k = True
+-
+-logger = logging.getLogger(__name__)
+-if not logger.handlers:
+-    logger.addHandler(NullHandler())
+-
+-def _copy_data(instream, outstream):
+-    # Copy one stream to another
+-    sent = 0
+-    if hasattr(sys.stdin, 'encoding'):
+-        enc = sys.stdin.encoding
+-    else:
+-        enc = 'ascii'
+-    while True:
+-        data = instream.read(1024)
+-        if len(data) == 0:
+-            break
+-        sent += len(data)
+-        logger.debug("sending chunk (%d): %r", sent, data[:256])
+-        try:
+-            outstream.write(data)
+-        except UnicodeError:
+-            outstream.write(data.encode(enc))
+-        except:
+-            # Can sometimes get 'broken pipe' errors even when the data has all
+-            # been sent
+-            logger.exception('Error sending data')
+-            break
+-    try:
+-        outstream.close()
+-    except IOError:
+-        logger.warning('Exception occurred while closing: ignored', exc_info=1)
+-    logger.debug("closed output, %d bytes sent", sent)
+-
+-def _threaded_copy_data(instream, outstream):
+-    wr = threading.Thread(target=_copy_data, args=(instream, outstream))
+-    wr.setDaemon(True)
+-    logger.debug('data copier: %r, %r, %r', wr, instream, outstream)
+-    wr.start()
+-    return wr
+-
+-def _write_passphrase(stream, passphrase, encoding):
+-    passphrase = '%s\n' % passphrase
+-    passphrase = passphrase.encode(encoding)
+-    stream.write(passphrase)
+-    logger.debug("Wrote passphrase: %r", passphrase)
+-
+-def _is_sequence(instance):
+-    return isinstance(instance,list) or isinstance(instance,tuple)
+-
+-def _make_binary_stream(s, encoding):
+-    try:
+-        if _py3k:
+-            if isinstance(s, str):
+-                s = s.encode(encoding)
+-        else:
+-            if type(s) is not str:
+-                s = s.encode(encoding)
+-        from io import BytesIO
+-        rv = BytesIO(s)
+-    except ImportError:
+-        rv = StringIO(s)
+-    return rv
+-
+-class Verify(object):
+-    "Handle status messages for --verify"
+-
+-    def __init__(self, gpg):
+-        self.gpg = gpg
+-        self.valid = False
+-        self.fingerprint = self.creation_date = self.timestamp = None
+-        self.signature_id = self.key_id = None
+-        self.username = None
+-
+-    def __nonzero__(self):
+-        return self.valid
+-
+-    __bool__ = __nonzero__
+-
+-    def handle_status(self, key, value):
+-        if key in ("TRUST_UNDEFINED", "TRUST_NEVER", "TRUST_MARGINAL",
+-                   "TRUST_FULLY", "TRUST_ULTIMATE", "RSA_OR_IDEA", "NODATA",
+-                   "IMPORT_RES", "PLAINTEXT", "PLAINTEXT_LENGTH",
+-                   "POLICY_URL", "DECRYPTION_INFO", "DECRYPTION_OKAY", "IMPORTED"):
+-            pass
+-        elif key == "BADSIG":
+-            self.valid = False
+-            self.status = 'signature bad'
+-            self.key_id, self.username = value.split(None, 1)
+-        elif key == "GOODSIG":
+-            self.valid = True
+-            self.status = 'signature good'
+-            self.key_id, self.username = value.split(None, 1)
+-        elif key == "VALIDSIG":
+-            (self.fingerprint,
+-             self.creation_date,
+-             self.sig_timestamp,
+-             self.expire_timestamp) = value.split()[:4]
+-            # may be different if signature is made with a subkey
+-            self.pubkey_fingerprint = value.split()[-1]
+-            self.status = 'signature valid'
+-        elif key == "SIG_ID":
+-            (self.signature_id,
+-             self.creation_date, self.timestamp) = value.split()
+-        elif key == "ERRSIG":
+-            self.valid = False
+-            (self.key_id,
+-             algo, hash_algo,
+-             cls,
+-             self.timestamp) = value.split()[:5]
+-            self.status = 'signature error'
+-        elif key == "DECRYPTION_FAILED":
+-            self.valid = False
+-            self.key_id = value
+-            self.status = 'decryption failed'
+-        elif key == "NO_PUBKEY":
+-            self.valid = False
+-            self.key_id = value
+-            self.status = 'no public key'
+-        elif key in ("KEYEXPIRED", "SIGEXPIRED"):
+-            # these are useless in verify, since they are spit out for any
+-            # pub/subkeys on the key, not just the one doing the signing.
+-            # if we want to check for signatures with expired key,
+-            # the relevant flag is EXPKEYSIG.
+-            pass
+-        elif key in ("EXPKEYSIG", "REVKEYSIG"):
+-            # signed with expired or revoked key
+-            self.valid = False
+-            self.key_id = value.split()[0]
+-            self.status = (('%s %s') % (key[:3], key[3:])).lower()
+-        else:
+-            raise ValueError("Unknown status message: %r" % key)
+-
+-class ImportResult(object):
+-    "Handle status messages for --import"
+-
+-    counts = '''count no_user_id imported imported_rsa unchanged
+-            n_uids n_subk n_sigs n_revoc sec_read sec_imported
+-            sec_dups not_imported'''.split()
+-    def __init__(self, gpg):
+-        self.gpg = gpg
+-        self.imported = []
+-        self.results = []
+-        self.fingerprints = []
+-        for result in self.counts:
+-            setattr(self, result, None)
+-
+-    def __nonzero__(self):
+-        if self.not_imported: return False
+-        if not self.fingerprints: return False
+-        return True
+-
+-    __bool__ = __nonzero__
+-
+-    ok_reason = {
+-        '0': 'Not actually changed',
+-        '1': 'Entirely new key',
+-        '2': 'New user IDs',
+-        '4': 'New signatures',
+-        '8': 'New subkeys',
+-        '16': 'Contains private key',
+-    }
+-
+-    problem_reason = {
+-        '0': 'No specific reason given',
+-        '1': 'Invalid Certificate',
+-        '2': 'Issuer Certificate missing',
+-        '3': 'Certificate Chain too long',
+-        '4': 'Error storing certificate',
+-    }
+-
+-    def handle_status(self, key, value):
+-        if key == "IMPORTED":
+-            # this duplicates info we already see in import_ok & import_problem
+-            pass
+-        elif key == "NODATA":
+-            self.results.append({'fingerprint': None,
+-                'problem': '0', 'text': 'No valid data found'})
+-        elif key == "IMPORT_OK":
+-            reason, fingerprint = value.split()
+-            reasons = []
+-            for code, text in list(self.ok_reason.items()):
+-                if int(reason) | int(code) == int(reason):
+-                    reasons.append(text)
+-            reasontext = '\n'.join(reasons) + "\n"
+-            self.results.append({'fingerprint': fingerprint,
+-                'ok': reason, 'text': reasontext})
+-            self.fingerprints.append(fingerprint)
+-        elif key == "IMPORT_PROBLEM":
+-            try:
+-                reason, fingerprint = value.split()
+-            except:
+-                reason = value
+-                fingerprint = '<unknown>'
+-            self.results.append({'fingerprint': fingerprint,
+-                'problem': reason, 'text': self.problem_reason[reason]})
+-        elif key == "IMPORT_RES":
+-            import_res = value.split()
+-            for i in range(len(self.counts)):
+-                setattr(self, self.counts[i], int(import_res[i]))
+-        elif key == "KEYEXPIRED":
+-            self.results.append({'fingerprint': None,
+-                'problem': '0', 'text': 'Key expired'})
+-        elif key == "SIGEXPIRED":
+-            self.results.append({'fingerprint': None,
+-                'problem': '0', 'text': 'Signature expired'})
+-        else:
+-            raise ValueError("Unknown status message: %r" % key)
+-
+-    def summary(self):
+-        l = []
+-        l.append('%d imported'%self.imported)
+-        if self.not_imported:
+-            l.append('%d not imported'%self.not_imported)
+-        return ', '.join(l)
+-
+-class ListKeys(list):
+-    ''' Handle status messages for --list-keys.
+-
+-        Handle pub and uid (relating the latter to the former).
+-
+-        Don't care about (info from src/DETAILS):
+-
+-        crt = X.509 certificate
+-        crs = X.509 certificate and private key available
+-        sub = subkey (secondary key)
+-        ssb = secret subkey (secondary key)
+-        uat = user attribute (same as user id except for field 10).
+-        sig = signature
+-        rev = revocation signature
+-        pkd = public key data (special field format, see below)
+-        grp = reserved for gpgsm
+-        rvk = revocation key
+-    '''
+-    def __init__(self, gpg):
+-        self.gpg = gpg
+-        self.curkey = None
+-        self.fingerprints = []
+-        self.uids = []
+-
+-    def key(self, args):
+-        vars = ("""
+-            type trust length algo keyid date expires dummy ownertrust uid
+-        """).split()
+-        self.curkey = {}
+-        for i in range(len(vars)):
+-            self.curkey[vars[i]] = args[i]
+-        self.curkey['uids'] = []
+-        if self.curkey['uid']:
+-            self.curkey['uids'].append(self.curkey['uid'])
+-        del self.curkey['uid']
+-        self.append(self.curkey)
+-
+-    pub = sec = key
+-
+-    def fpr(self, args):
+-        self.curkey['fingerprint'] = args[9]
+-        self.fingerprints.append(args[9])
+-
+-    def uid(self, args):
+-        self.curkey['uids'].append(args[9])
+-        self.uids.append(args[9])
+-
+-    def handle_status(self, key, value):
+-        pass
+-
+-class Crypt(Verify):
+-    "Handle status messages for --encrypt and --decrypt"
+-    def __init__(self, gpg):
+-        Verify.__init__(self, gpg)
+-        self.data = ''
+-        self.ok = False
+-        self.status = ''
+-
+-    def __nonzero__(self):
+-        if self.ok: return True
+-        return False
+-
+-    __bool__ = __nonzero__
+-
+-    def __str__(self):
+-        return self.data.decode(self.gpg.encoding, self.gpg.decode_errors)
+-
+-    def handle_status(self, key, value):
+-        if key in ("ENC_TO", "USERID_HINT", "GOODMDC", "END_DECRYPTION",
+-                   "BEGIN_SIGNING", "NO_SECKEY", "ERROR", "NODATA",
+-                   "CARDCTRL"):
+-            # in the case of ERROR, this is because a more specific error
+-            # message will have come first
+-            pass
+-        elif key in ("NEED_PASSPHRASE", "BAD_PASSPHRASE", "GOOD_PASSPHRASE",
+-                     "MISSING_PASSPHRASE", "DECRYPTION_FAILED",
+-                     "KEY_NOT_CREATED"):
+-            self.status = key.replace("_", " ").lower()
+-        elif key == "NEED_PASSPHRASE_SYM":
+-            self.status = 'need symmetric passphrase'
+-        elif key == "BEGIN_DECRYPTION":
+-            self.status = 'decryption incomplete'
+-        elif key == "BEGIN_ENCRYPTION":
+-            self.status = 'encryption incomplete'
+-        elif key == "DECRYPTION_OKAY":
+-            self.status = 'decryption ok'
+-            self.ok = True
+-        elif key == "END_ENCRYPTION":
+-            self.status = 'encryption ok'
+-            self.ok = True
+-        elif key == "INV_RECP":
+-            self.status = 'invalid recipient'
+-        elif key == "KEYEXPIRED":
+-            self.status = 'key expired'
+-        elif key == "SIG_CREATED":
+-            self.status = 'sig created'
+-        elif key == "SIGEXPIRED":
+-            self.status = 'sig expired'
+-        else:
+-            Verify.handle_status(self, key, value)
+-
+-class GenKey(object):
+-    "Handle status messages for --gen-key"
+-    def __init__(self, gpg):
+-        self.gpg = gpg
+-        self.type = None
+-        self.fingerprint = None
+-
+-    def __nonzero__(self):
+-        if self.fingerprint: return True
+-        return False
+-
+-    __bool__ = __nonzero__
+-
+-    def __str__(self):
+-        return self.fingerprint or ''
+-
+-    def handle_status(self, key, value):
+-        if key in ("PROGRESS", "GOOD_PASSPHRASE", "NODATA"):
+-            pass
+-        elif key == "KEY_CREATED":
+-            (self.type,self.fingerprint) = value.split()
+-        else:
+-            raise ValueError("Unknown status message: %r" % key)
+-
+-class DeleteResult(object):
+-    "Handle status messages for --delete-key and --delete-secret-key"
+-    def __init__(self, gpg):
+-        self.gpg = gpg
+-        self.status = 'ok'
+-
+-    def __str__(self):
+-        return self.status
+-
+-    problem_reason = {
+-        '1': 'No such key',
+-        '2': 'Must delete secret key first',
+-        '3': 'Ambigious specification',
+-    }
+-
+-    def handle_status(self, key, value):
+-        if key == "DELETE_PROBLEM":
+-            self.status = self.problem_reason.get(value,
+-                                                  "Unknown error: %r" % value)
+-        else:
+-            raise ValueError("Unknown status message: %r" % key)
+-
+-class Sign(object):
+-    "Handle status messages for --sign"
+-    def __init__(self, gpg):
+-        self.gpg = gpg
+-        self.type = None
+-        self.fingerprint = None
+-
+-    def __nonzero__(self):
+-        return self.fingerprint is not None
+-
+-    __bool__ = __nonzero__
+-
+-    def __str__(self):
+-        return self.data.decode(self.gpg.encoding, self.gpg.decode_errors)
+-
+-    def handle_status(self, key, value):
+-        if key in ("USERID_HINT", "NEED_PASSPHRASE", "BAD_PASSPHRASE",
+-                   "GOOD_PASSPHRASE", "BEGIN_SIGNING", "CARDCTRL"):
+-            pass
+-        elif key == "SIG_CREATED":
+-            (self.type,
+-             algo, hashalgo, cls,
+-             self.timestamp, self.fingerprint
+-             ) = value.split()
+-        else:
+-            raise ValueError("Unknown status message: %r" % key)
+-
+-
+-class GPG(object):
+-
+-    decode_errors = 'strict'
+-
+-    result_map = {
+-        'crypt': Crypt,
+-        'delete': DeleteResult,
+-        'generate': GenKey,
+-        'import': ImportResult,
+-        'list': ListKeys,
+-        'sign': Sign,
+-        'verify': Verify,
+-    }
+-
+-    "Encapsulate access to the gpg executable"
+-    def __init__(self, gpgbinary='gpg', gnupghome=None, verbose=False,
+-                 use_agent=False, keyring=None):
+-        """Initialize a GPG process wrapper.  Options are:
+-
+-        gpgbinary -- full pathname for GPG binary.
+-
+-        gnupghome -- full pathname to where we can find the public and
+-        private keyrings.  Default is whatever gpg defaults to.
+-        keyring -- name of alternative keyring file to use. If specified,
+-        the default keyring is not used.
+-        """
+-        self.gpgbinary = gpgbinary
+-        self.gnupghome = gnupghome
+-        self.keyring = keyring
+-        self.verbose = verbose
+-        self.use_agent = use_agent
+-        self.encoding = locale.getpreferredencoding()
+-        if self.encoding is None: # This happens on Jython!
+-            self.encoding = sys.stdin.encoding
+-        if gnupghome and not os.path.isdir(self.gnupghome):
+-            os.makedirs(self.gnupghome,0x1C0)
+-        p = self._open_subprocess(["--version"])
+-        result = self.result_map['verify'](self) # any result will do for this
+-        self._collect_output(p, result, stdin=p.stdin)
+-        if p.returncode != 0:
+-            raise ValueError("Error invoking gpg: %s: %s" % (p.returncode,
+-                                                             result.stderr))
+-
+-    def _open_subprocess(self, args, passphrase=False):
+-        # Internal method: open a pipe to a GPG subprocess and return
+-        # the file objects for communicating with it.
+-        cmd = [self.gpgbinary, '--status-fd 2 --no-tty']
+-        if self.gnupghome:
+-            cmd.append('--homedir "%s" ' % self.gnupghome)
+-        if self.keyring:
+-            cmd.append('--no-default-keyring --keyring "%s" ' % self.keyring)
+-        if passphrase:
+-            cmd.append('--batch --passphrase-fd 0')
+-        if self.use_agent:
+-            cmd.append('--use-agent')
+-        cmd.extend(args)
+-        cmd = ' '.join(cmd)
+-        if self.verbose:
+-            print(cmd)
+-        logger.debug("%s", cmd)
+-        return Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+-
+-    def _read_response(self, stream, result):
+-        # Internal method: reads all the stderr output from GPG, taking notice
+-        # only of lines that begin with the magic [GNUPG:] prefix.
+-        #
+-        # Calls methods on the response object for each valid token found,
+-        # with the arg being the remainder of the status line.
+-        lines = []
+-        while True:
+-            line = stream.readline()
+-            if len(line) == 0:
+-                break
+-            lines.append(line)
+-            line = line.rstrip()
+-            if self.verbose:
+-                print(line)
+-            logger.debug("%s", line)
+-            if line[0:9] == '[GNUPG:] ':
+-                # Chop off the prefix
+-                line = line[9:]
+-                L = line.split(None, 1)
+-                keyword = L[0]
+-                if len(L) > 1:
+-                    value = L[1]
+-                else:
+-                    value = ""
+-                result.handle_status(keyword, value)
+-        result.stderr = ''.join(lines)
+-
+-    def _read_data(self, stream, result):
+-        # Read the contents of the file from GPG's stdout
+-        chunks = []
+-        while True:
+-            data = stream.read(1024)
+-            if len(data) == 0:
+-                break
+-            logger.debug("chunk: %r" % data[:256])
+-            chunks.append(data)
+-        if _py3k:
+-            # Join using b'' or '', as appropriate
+-            result.data = type(data)().join(chunks)
+-        else:
+-            result.data = ''.join(chunks)
+-
+-    def _collect_output(self, process, result, writer=None, stdin=None):
+-        """
+-        Drain the subprocesses output streams, writing the collected output
+-        to the result. If a writer thread (writing to the subprocess) is given,
+-        make sure it's joined before returning. If a stdin stream is given,
+-        close it before returning.
+-        """
+-        stderr = codecs.getreader(self.encoding)(process.stderr)
+-        rr = threading.Thread(target=self._read_response, args=(stderr, result))
+-        rr.setDaemon(True)
+-        logger.debug('stderr reader: %r', rr)
+-        rr.start()
+-
+-        stdout = process.stdout
+-        dr = threading.Thread(target=self._read_data, args=(stdout, result))
+-        dr.setDaemon(True)
+-        logger.debug('stdout reader: %r', dr)
+-        dr.start()
+-
+-        dr.join()
+-        rr.join()
+-        if writer is not None:
+-            writer.join()
+-        process.wait()
+-        if stdin is not None:
+-            try:
+-                stdin.close()
+-            except IOError:
+-                pass
+-        stderr.close()
+-        stdout.close()
+-
+-    def _handle_io(self, args, file, result, passphrase=None, binary=False):
+-        "Handle a call to GPG - pass input data, collect output data"
+-        # Handle a basic data call - pass data to GPG, handle the output
+-        # including status information. Garbage In, Garbage Out :)
+-        p = self._open_subprocess(args, passphrase is not None)
+-        if not binary:
+-            stdin = codecs.getwriter(self.encoding)(p.stdin)
+-        else:
+-            stdin = p.stdin
+-        if passphrase:
+-            _write_passphrase(stdin, passphrase, self.encoding)
+-        writer = _threaded_copy_data(file, stdin)
+-        self._collect_output(p, result, writer, stdin)
+-        return result
+-
+-    #
+-    # SIGNATURE METHODS
+-    #
+-    def sign(self, message, **kwargs):
+-        """sign message"""
+-        f = _make_binary_stream(message, self.encoding)
+-        result = self.sign_file(f, **kwargs)
+-        f.close()
+-        return result
+-
+-    def sign_file(self, file, keyid=None, passphrase=None, clearsign=True,
+-                  detach=False, binary=False):
+-        """sign file"""
+-        logger.debug("sign_file: %s", file)
+-        if binary:
+-            args = ['-s']
+-        else:
+-            args = ['-sa']
+-        # You can't specify detach-sign and clearsign together: gpg ignores
+-        # the detach-sign in that case.
+-        if detach:
+-            args.append("--detach-sign")
+-        elif clearsign:
+-            args.append("--clearsign")
+-        if keyid:
+-            args.append('--default-key "%s"' % keyid)
+-        args.extend(['--no-version', "--comment ''"])
+-        result = self.result_map['sign'](self)
+-        #We could use _handle_io here except for the fact that if the
+-        #passphrase is bad, gpg bails and you can't write the message.
+-        p = self._open_subprocess(args, passphrase is not None)
+-        try:
+-            stdin = p.stdin
+-            if passphrase:
+-                _write_passphrase(stdin, passphrase, self.encoding)
+-            writer = _threaded_copy_data(file, stdin)
+-        except IOError:
+-            logging.exception("error writing message")
+-            writer = None
+-        self._collect_output(p, result, writer, stdin)
+-        return result
+-
+-    def verify(self, data):
+-        """Verify the signature on the contents of the string 'data'
+-
+-        >>> gpg = GPG(gnupghome="keys")
+-        >>> input = gpg.gen_key_input(Passphrase='foo')
+-        >>> key = gpg.gen_key(input)
+-        >>> assert key
+-        >>> sig = gpg.sign('hello',keyid=key.fingerprint,passphrase='bar')
+-        >>> assert not sig
+-        >>> sig = gpg.sign('hello',keyid=key.fingerprint,passphrase='foo')
+-        >>> assert sig
+-        >>> verify = gpg.verify(sig.data)
+-        >>> assert verify
+-
+-        """
+-        f = _make_binary_stream(data, self.encoding)
+-        result = self.verify_file(f)
+-        f.close()
+-        return result
+-
+-    def verify_file(self, file, data_filename=None):
+-        "Verify the signature on the contents of the file-like object 'file'"
+-        logger.debug('verify_file: %r, %r', file, data_filename)
+-        result = self.result_map['verify'](self)
+-        args = ['--verify']
+-        if data_filename is None:
+-            self._handle_io(args, file, result, binary=True)
+-        else:
+-            logger.debug('Handling detached verification')
+-            import tempfile
+-            fd, fn = tempfile.mkstemp(prefix='pygpg')
+-            s = file.read()
+-            file.close()
+-            logger.debug('Wrote to temp file: %r', s)
+-            os.write(fd, s)
+-            os.close(fd)
+-            args.append(fn)
+-            args.append('"%s"' % data_filename)
+-            try:
+-                p = self._open_subprocess(args)
+-                self._collect_output(p, result, stdin=p.stdin)
+-            finally:
+-                os.unlink(fn)
+-        return result
+-
+-    #
+-    # KEY MANAGEMENT
+-    #
+-
+-    def import_keys(self, key_data):
+-        """ import the key_data into our keyring
+-
+-        >>> import shutil
+-        >>> shutil.rmtree("keys")
+-        >>> gpg = GPG(gnupghome="keys")
+-        >>> input = gpg.gen_key_input()
+-        >>> result = gpg.gen_key(input)
+-        >>> print1 = result.fingerprint
+-        >>> result = gpg.gen_key(input)
+-        >>> print2 = result.fingerprint
+-        >>> pubkey1 = gpg.export_keys(print1)
+-        >>> seckey1 = gpg.export_keys(print1,secret=True)
+-        >>> seckeys = gpg.list_keys(secret=True)
+-        >>> pubkeys = gpg.list_keys()
+-        >>> assert print1 in seckeys.fingerprints
+-        >>> assert print1 in pubkeys.fingerprints
+-        >>> str(gpg.delete_keys(print1))
+-        'Must delete secret key first'
+-        >>> str(gpg.delete_keys(print1,secret=True))
+-        'ok'
+-        >>> str(gpg.delete_keys(print1))
+-        'ok'
+-        >>> str(gpg.delete_keys("nosuchkey"))
+-        'No such key'
+-        >>> seckeys = gpg.list_keys(secret=True)
+-        >>> pubkeys = gpg.list_keys()
+-        >>> assert not print1 in seckeys.fingerprints
+-        >>> assert not print1 in pubkeys.fingerprints
+-        >>> result = gpg.import_keys('foo')
+-        >>> assert not result
+-        >>> result = gpg.import_keys(pubkey1)
+-        >>> pubkeys = gpg.list_keys()
+-        >>> seckeys = gpg.list_keys(secret=True)
+-        >>> assert not print1 in seckeys.fingerprints
+-        >>> assert print1 in pubkeys.fingerprints
+-        >>> result = gpg.import_keys(seckey1)
+-        >>> assert result
+-        >>> seckeys = gpg.list_keys(secret=True)
+-        >>> pubkeys = gpg.list_keys()
+-        >>> assert print1 in seckeys.fingerprints
+-        >>> assert print1 in pubkeys.fingerprints
+-        >>> assert print2 in pubkeys.fingerprints
+-
+-        """
+-        result = self.result_map['import'](self)
+-        logger.debug('import_keys: %r', key_data[:256])
+-        data = _make_binary_stream(key_data, self.encoding)
+-        self._handle_io(['--import'], data, result, binary=True)
+-        logger.debug('import_keys result: %r', result.__dict__)
+-        data.close()
+-        return result
+-
+-    def recv_keys(self, keyserver, *keyids):
+-        """Import a key from a keyserver
+-
+-        >>> import shutil
+-        >>> shutil.rmtree("keys")
+-        >>> gpg = GPG(gnupghome="keys")
+-        >>> result = gpg.recv_keys('pgp.mit.edu', '3FF0DB166A7476EA')
+-        >>> assert result
+-
+-        """
+-        result = self.result_map['import'](self)
+-        logger.debug('recv_keys: %r', keyids)
+-        data = _make_binary_stream("", self.encoding)
+-        #data = ""
+-        args = ['--keyserver', keyserver, '--recv-keys']
+-        args.extend(keyids)
+-        self._handle_io(args, data, result, binary=True)
+-        logger.debug('recv_keys result: %r', result.__dict__)
+-        data.close()
+-        return result
+-
+-    def delete_keys(self, fingerprints, secret=False):
+-        which='key'
+-        if secret:
+-            which='secret-key'
+-        if _is_sequence(fingerprints):
+-            fingerprints = ' '.join(fingerprints)
+-        args = ['--batch --delete-%s "%s"' % (which, fingerprints)]
+-        result = self.result_map['delete'](self)
+-        p = self._open_subprocess(args)
+-        self._collect_output(p, result, stdin=p.stdin)
+-        return result
+-
+-    def export_keys(self, keyids, secret=False):
+-        "export the indicated keys. 'keyid' is anything gpg accepts"
+-        which=''
+-        if secret:
+-            which='-secret-key'
+-        if _is_sequence(keyids):
+-            keyids = ' '.join(['"%s"' % k for k in keyids])
+-        args = ["--armor --export%s %s" % (which, keyids)]
+-        p = self._open_subprocess(args)
+-        # gpg --export produces no status-fd output; stdout will be
+-        # empty in case of failure
+-        #stdout, stderr = p.communicate()
+-        result = self.result_map['delete'](self) # any result will do
+-        self._collect_output(p, result, stdin=p.stdin)
+-        logger.debug('export_keys result: %r', result.data)
+-        return result.data.decode(self.encoding, self.decode_errors)
+-
+-    def list_keys(self, secret=False):
+-        """ list the keys currently in the keyring
+-
+-        >>> import shutil
+-        >>> shutil.rmtree("keys")
+-        >>> gpg = GPG(gnupghome="keys")
+-        >>> input = gpg.gen_key_input()
+-        >>> result = gpg.gen_key(input)
+-        >>> print1 = result.fingerprint
+-        >>> result = gpg.gen_key(input)
+-        >>> print2 = result.fingerprint
+-        >>> pubkeys = gpg.list_keys()
+-        >>> assert print1 in pubkeys.fingerprints
+-        >>> assert print2 in pubkeys.fingerprints
+-
+-        """
+-
+-        which='keys'
+-        if secret:
+-            which='secret-keys'
+-        args = "--list-%s --fixed-list-mode --fingerprint --with-colons" % (which,)
+-        args = [args]
+-        p = self._open_subprocess(args)
+-
+-        # there might be some status thingumy here I should handle... (amk)
+-        # ...nope, unless you care about expired sigs or keys (stevegt)
+-
+-        # Get the response information
+-        result = self.result_map['list'](self)
+-        self._collect_output(p, result, stdin=p.stdin)
+-        lines = result.data.decode(self.encoding,
+-                                   self.decode_errors).splitlines()
+-        valid_keywords = 'pub uid sec fpr'.split()
+-        for line in lines:
+-            if self.verbose:
+-                print(line)
+-            logger.debug("line: %r", line.rstrip())
+-            if not line:
+-                break
+-            L = line.strip().split(':')
+-            if not L:
+-                continue
+-            keyword = L[0]
+-            if keyword in valid_keywords:
+-                getattr(result, keyword)(L)
+-        return result
+-
+-    def gen_key(self, input):
+-        """Generate a key; you might use gen_key_input() to create the
+-        control input.
+-
+-        >>> gpg = GPG(gnupghome="keys")
+-        >>> input = gpg.gen_key_input()
+-        >>> result = gpg.gen_key(input)
+-        >>> assert result
+-        >>> result = gpg.gen_key('foo')
+-        >>> assert not result
+-
+-        """
+-        args = ["--gen-key --batch"]
+-        result = self.result_map['generate'](self)
+-        f = _make_binary_stream(input, self.encoding)
+-        self._handle_io(args, f, result, binary=True)
+-        f.close()
+-        return result
+-
+-    def gen_key_input(self, **kwargs):
+-        """
+-        Generate --gen-key input per gpg doc/DETAILS
+-        """
+-        parms = {}
+-        for key, val in list(kwargs.items()):
+-            key = key.replace('_','-').title()
+-            parms[key] = val
+-        parms.setdefault('Key-Type','RSA')
+-        parms.setdefault('Key-Length',1024)
+-        parms.setdefault('Name-Real', "Autogenerated Key")
+-        parms.setdefault('Name-Comment', "Generated by gnupg.py")
+-        try:
+-            logname = os.environ['LOGNAME']
+-        except KeyError:
+-            logname = os.environ['USERNAME']
+-        hostname = socket.gethostname()
+-        parms.setdefault('Name-Email', "%s@%s" % (logname.replace(' ', '_'),
+-                                                  hostname))
+-        out = "Key-Type: %s\n" % parms.pop('Key-Type')
+-        for key, val in list(parms.items()):
+-            out += "%s: %s\n" % (key, val)
+-        out += "%commit\n"
+-        return out
+-
+-        # Key-Type: RSA
+-        # Key-Length: 1024
+-        # Name-Real: ISdlink Server on %s
+-        # Name-Comment: Created by %s
+-        # Name-Email: isdlink@%s
+-        # Expire-Date: 0
+-        # %commit
+-        #
+-        #
+-        # Key-Type: DSA
+-        # Key-Length: 1024
+-        # Subkey-Type: ELG-E
+-        # Subkey-Length: 1024
+-        # Name-Real: Joe Tester
+-        # Name-Comment: with stupid passphrase
+-        # Name-Email: joe@foo.bar
+-        # Expire-Date: 0
+-        # Passphrase: abc
+-        # %pubring foo.pub
+-        # %secring foo.sec
+-        # %commit
+-
+-    #
+-    # ENCRYPTION
+-    #
+-    def encrypt_file(self, file, recipients, sign=None,
+-            always_trust=False, passphrase=None,
+-            armor=True, output=None, symmetric=False):
+-        "Encrypt the message read from the file-like object 'file'"
+-        args = ['--no-version', "--comment ''"]
+-        if symmetric:
+-            args.append('--symmetric')
+-        else:
+-            args.append('--encrypt')
+-            if not _is_sequence(recipients):
+-                recipients = (recipients,)
+-            for recipient in recipients:
+-                args.append('--recipient "%s"' % recipient)
+-        if armor:   # create ascii-armored output - set to False for binary output
+-            args.append('--armor')
+-        if output:  # write the output to a file with the specified name
+-            if os.path.exists(output):
+-                os.remove(output) # to avoid overwrite confirmation message
+-            args.append('--output "%s"' % output)
+-        if sign:
+-            args.append('--sign --default-key "%s"' % sign)
+-        if always_trust:
+-            args.append("--always-trust")
+-        result = self.result_map['crypt'](self)
+-        self._handle_io(args, file, result, passphrase=passphrase, binary=True)
+-        logger.debug('encrypt result: %r', result.data)
+-        return result
+-
+-    def encrypt(self, data, recipients, **kwargs):
+-        """Encrypt the message contained in the string 'data'
+-
+-        >>> import shutil
+-        >>> if os.path.exists("keys"):
+-        ...     shutil.rmtree("keys")
+-        >>> gpg = GPG(gnupghome="keys")
+-        >>> input = gpg.gen_key_input(passphrase='foo')
+-        >>> result = gpg.gen_key(input)
+-        >>> print1 = result.fingerprint
+-        >>> input = gpg.gen_key_input()
+-        >>> result = gpg.gen_key(input)
+-        >>> print2 = result.fingerprint
+-        >>> result = gpg.encrypt("hello",print2)
+-        >>> message = str(result)
+-        >>> assert message != 'hello'
+-        >>> result = gpg.decrypt(message)
+-        >>> assert result
+-        >>> str(result)
+-        'hello'
+-        >>> result = gpg.encrypt("hello again",print1)
+-        >>> message = str(result)
+-        >>> result = gpg.decrypt(message)
+-        >>> result.status == 'need passphrase'
+-        True
+-        >>> result = gpg.decrypt(message,passphrase='bar')
+-        >>> result.status in ('decryption failed', 'bad passphrase')
+-        True
+-        >>> assert not result
+-        >>> result = gpg.decrypt(message,passphrase='foo')
+-        >>> result.status == 'decryption ok'
+-        True
+-        >>> str(result)
+-        'hello again'
+-        >>> result = gpg.encrypt("signed hello",print2,sign=print1)
+-        >>> result.status == 'need passphrase'
+-        True
+-        >>> result = gpg.encrypt("signed hello",print2,sign=print1,passphrase='foo')
+-        >>> result.status == 'encryption ok'
+-        True
+-        >>> message = str(result)
+-        >>> result = gpg.decrypt(message)
+-        >>> result.status == 'decryption ok'
+-        True
+-        >>> assert result.fingerprint == print1
+-
+-        """
+-        data = _make_binary_stream(data, self.encoding)
+-        result = self.encrypt_file(data, recipients, **kwargs)
+-        data.close()
+-        return result
+-
+-    def decrypt(self, message, **kwargs):
+-        data = _make_binary_stream(message, self.encoding)
+-        result = self.decrypt_file(data, **kwargs)
+-        data.close()
+-        return result
+-
+-    def decrypt_file(self, file, always_trust=False, passphrase=None,
+-                     output=None):
+-        args = ["--decrypt"]
+-        if output:  # write the output to a file with the specified name
+-            if os.path.exists(output):
+-                os.remove(output) # to avoid overwrite confirmation message
+-            args.append('--output "%s"' % output)
+-        if always_trust:
+-            args.append("--always-trust")
+-        result = self.result_map['crypt'](self)
+-        self._handle_io(args, file, result, passphrase, binary=True)
+-        logger.debug('decrypt result: %r', result.data)
+-        return result
+-
+diff --git a/sleekxmpp/thirdparty/mini_dateutil.py b/sleekxmpp/thirdparty/mini_dateutil.py
+deleted file mode 100644
+index e751a44..0000000
+--- a/sleekxmpp/thirdparty/mini_dateutil.py
++++ /dev/null
+@@ -1,273 +0,0 @@
+-# This module is a very stripped down version of the dateutil
+-# package for when dateutil has not been installed. As a replacement
+-# for dateutil.parser.parse, the parsing methods from
+-# http://blog.mfabrik.com/2008/06/30/relativity-of-time-shortcomings-in-python-datetime-and-workaround/
+-
+-#As such, the following copyrights and licenses applies:
+-
+-
+-# dateutil - Extensions to the standard python 2.3+ datetime module.
+-#
+-# Copyright (c) 2003-2011 - Gustavo Niemeyer <gustavo@niemeyer.net>
+-#
+-# All rights reserved.
+-#
+-# Redistribution and use in source and binary forms, with or without
+-# modification, are permitted provided that the following conditions are met:
+-#
+-#     * Redistributions of source code must retain the above copyright notice,
+-#       this list of conditions and the following disclaimer.
+-#     * Redistributions in binary form must reproduce the above copyright notice,
+-#       this list of conditions and the following disclaimer in the documentation
+-#       and/or other materials provided with the distribution.
+-#     * Neither the name of the copyright holder nor the names of its
+-#       contributors may be used to endorse or promote products derived from
+-#       this software without specific prior written permission.
+-#
+-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+-# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-# PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-
+-
+-# fixed_dateime
+-#
+-# Copyright (c) 2008, Red Innovation Ltd., Finland
+-# All rights reserved.
+-#
+-# Redistribution and use in source and binary forms, with or without
+-# modification, are permitted provided that the following conditions are met:
+-#     * Redistributions of source code must retain the above copyright
+-#       notice, this list of conditions and the following disclaimer.
+-#     * Redistributions in binary form must reproduce the above copyright
+-#       notice, this list of conditions and the following disclaimer in the
+-#       documentation and/or other materials provided with the distribution.
+-#     * Neither the name of Red Innovation nor the names of its contributors
+-#       may be used to endorse or promote products derived from this software
+-#       without specific prior written permission.
+-#
+-# THIS SOFTWARE IS PROVIDED BY RED INNOVATION ``AS IS'' AND ANY
+-# EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+-# DISCLAIMED. IN NO EVENT SHALL RED INNOVATION BE LIABLE FOR ANY
+-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-
+-
+-
+-import re
+-import math
+-import datetime
+-
+-
+-ZERO = datetime.timedelta(0)
+-
+-
+-try:
+-    from dateutil.parser import parse as parse_iso
+-    from dateutil.tz import tzoffset, tzutc
+-except:
+-    # As a stopgap, define the two timezones here based
+-    # on the dateutil code.
+-
+-    class tzutc(datetime.tzinfo):
+-
+-        def utcoffset(self, dt):
+-            return ZERO
+-
+-        def dst(self, dt):
+-            return ZERO
+-
+-        def tzname(self, dt):
+-            return "UTC"
+-
+-        def __eq__(self, other):
+-            return (isinstance(other, tzutc) or
+-                    (isinstance(other, tzoffset) and other._offset == ZERO))
+-
+-        def __ne__(self, other):
+-            return not self.__eq__(other)
+-
+-        def __repr__(self):
+-            return "%s()" % self.__class__.__name__
+-
+-        __reduce__ = object.__reduce__
+-
+-    class tzoffset(datetime.tzinfo):
+-
+-        def __init__(self, name, offset):
+-            self._name = name
+-            self._offset = datetime.timedelta(minutes=offset)
+-
+-        def utcoffset(self, dt):
+-            return self._offset
+-
+-        def dst(self, dt):
+-            return ZERO
+-
+-        def tzname(self, dt):
+-            return self._name
+-
+-        def __eq__(self, other):
+-            return (isinstance(other, tzoffset) and
+-                    self._offset == other._offset)
+-
+-        def __ne__(self, other):
+-            return not self.__eq__(other)
+-
+-        def __repr__(self):
+-            return "%s(%s, %s)" % (self.__class__.__name__,
+-                                   repr(self._name),
+-                                   self._offset.days*86400+self._offset.seconds)
+-
+-        __reduce__ = object.__reduce__
+-
+-
+-    _fixed_offset_tzs = { }
+-    UTC = tzutc()
+-
+-    def _get_fixed_offset_tz(offsetmins):
+-        """For internal use only: Returns a tzinfo with
+-        the given fixed offset. This creates only one instance
+-        for each offset; the zones are kept in a dictionary"""
+-
+-        if offsetmins == 0:
+-            return UTC
+-
+-        if not offsetmins in _fixed_offset_tzs:
+-            if offsetmins < 0:
+-                sign = '-'
+-                absoff = -offsetmins
+-            else:
+-                sign = '+'
+-                absoff = offsetmins
+-
+-            name = "UTC%s%02d:%02d" % (sign, int(absoff / 60), absoff % 60)
+-            inst = tzoffset(name,offsetmins)
+-            _fixed_offset_tzs[offsetmins] = inst
+-
+-        return _fixed_offset_tzs[offsetmins]
+-
+-
+-    _iso8601_parser = re.compile("""
+-        ^
+-        (?P<year> [0-9]{4})?(?P<ymdsep>-?)?
+-        (?P<month>[0-9]{2})?(?P=ymdsep)?
+-        (?P<day>  [0-9]{2})?
+-
+-        (?P<time>
+-            (?: # time part... optional... at least hour must be specified
+-            (?:T|\s+)?
+-                (?P<hour>[0-9]{2})
+-                (?:
+-                    # minutes, separated with :, or none, from hours
+-                    (?P<hmssep>[:]?)
+-                    (?P<minute>[0-9]{2})
+-                    (?:
+-                        # same for seconds, separated with :, or none, from hours
+-                        (?P=hmssep)
+-                        (?P<second>[0-9]{2})
+-                    )?
+-                )?
+-
+-                # fractions
+-                (?: [,.] (?P<frac>[0-9]{1,10}))?
+-
+-                # timezone, Z, +-hh or +-hh:?mm. MUST BE, but complain if not there.
+-                (
+-                    (?P<tzempty>Z)
+-                |
+-                    (?P<tzh>[+-][0-9]{2})
+-                    (?: :? # optional separator
+-                        (?P<tzm>[0-9]{2})
+-                    )?
+-                )?
+-            )
+-        )?
+-        $
+-    """, re.X) # """
+-
+-    def parse_iso(timestamp):
+-        """Internal function for parsing a timestamp in
+-        ISO 8601 format"""
+-
+-        timestamp = timestamp.strip()
+-
+-        m = _iso8601_parser.match(timestamp)
+-        if not m:
+-            raise ValueError("Not a proper ISO 8601 timestamp!: %s" % timestamp)
+-
+-        vals = m.groupdict()
+-        def_vals = {'year': 1970, 'month': 1, 'day': 1}
+-        for key in vals:
+-            if vals[key] is None:
+-                vals[key] = def_vals.get(key, 0)
+-            elif key not in ['time', 'ymdsep', 'hmssep', 'tzempty']:
+-                vals[key] = int(vals[key])
+-
+-        year  = vals['year']
+-        month = vals['month']
+-        day   = vals['day']
+-
+-        if m.group('time') is None:
+-            return datetime.date(year, month, day)
+-
+-        h, min, s, us = None, None, None, 0
+-        frac = 0
+-        if m.group('tzempty') == None and m.group('tzh') == None:
+-            raise ValueError("Not a proper ISO 8601 timestamp: " +
+-                    "missing timezone (Z or +hh[:mm])!")
+-
+-        if m.group('frac'):
+-            frac = m.group('frac')
+-            power = len(frac)
+-            frac  = int(frac) / 10.0 ** power
+-
+-        if m.group('hour'):
+-            h = vals['hour']
+-
+-        if m.group('minute'):
+-            min = vals['minute']
+-
+-        if m.group('second'):
+-            s = vals['second']
+-
+-        if frac != None:
+-            # ok, fractions of hour?
+-            if min == None:
+-                frac, min = math.modf(frac * 60.0)
+-                min = int(min)
+-
+-            # fractions of second?
+-            if s == None:
+-                frac, s = math.modf(frac * 60.0)
+-                s = int(s)
+-
+-            # and extract microseconds...
+-            us = int(frac * 1000000)
+-
+-        if m.group('tzempty') == 'Z':
+-            offsetmins = 0
+-        else:
+-            # timezone: hour diff with sign
+-            offsetmins = vals['tzh'] * 60
+-            tzm = m.group('tzm')
+-
+-            # add optional minutes
+-            if tzm != None:
+-                tzm = int(tzm)
+-                offsetmins += tzm if offsetmins > 0 else -tzm
+-
+-        tz = _get_fixed_offset_tz(offsetmins)
+-        return datetime.datetime(year, month, day, h, min, s, us, tz)
+diff --git a/sleekxmpp/thirdparty/ordereddict.py b/sleekxmpp/thirdparty/ordereddict.py
+deleted file mode 100644
+index 5b0303f..0000000
+--- a/sleekxmpp/thirdparty/ordereddict.py
++++ /dev/null
+@@ -1,127 +0,0 @@
+-# Copyright (c) 2009 Raymond Hettinger
+-#
+-# Permission is hereby granted, free of charge, to any person
+-# obtaining a copy of this software and associated documentation files
+-# (the "Software"), to deal in the Software without restriction,
+-# including without limitation the rights to use, copy, modify, merge,
+-# publish, distribute, sublicense, and/or sell copies of the Software,
+-# and to permit persons to whom the Software is furnished to do so,
+-# subject to the following conditions:
+-#
+-#     The above copyright notice and this permission notice shall be
+-#     included in all copies or substantial portions of the Software.
+-#
+-#     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+-#     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+-#     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+-#     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+-#     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+-#     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+-#     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+-#     OTHER DEALINGS IN THE SOFTWARE.
+-
+-from UserDict import DictMixin
+-
+-class OrderedDict(dict, DictMixin):
+-
+-    def __init__(self, *args, **kwds):
+-        if len(args) > 1:
+-            raise TypeError('expected at most 1 arguments, got %d' % len(args))
+-        try:
+-            self.__end
+-        except AttributeError:
+-            self.clear()
+-        self.update(*args, **kwds)
+-
+-    def clear(self):
+-        self.__end = end = []
+-        end += [None, end, end]         # sentinel node for doubly linked list
+-        self.__map = {}                 # key --> [key, prev, next]
+-        dict.clear(self)
+-
+-    def __setitem__(self, key, value):
+-        if key not in self:
+-            end = self.__end
+-            curr = end[1]
+-            curr[2] = end[1] = self.__map[key] = [key, curr, end]
+-        dict.__setitem__(self, key, value)
+-
+-    def __delitem__(self, key):
+-        dict.__delitem__(self, key)
+-        key, prev, next = self.__map.pop(key)
+-        prev[2] = next
+-        next[1] = prev
+-
+-    def __iter__(self):
+-        end = self.__end
+-        curr = end[2]
+-        while curr is not end:
+-            yield curr[0]
+-            curr = curr[2]
+-
+-    def __reversed__(self):
+-        end = self.__end
+-        curr = end[1]
+-        while curr is not end:
+-            yield curr[0]
+-            curr = curr[1]
+-
+-    def popitem(self, last=True):
+-        if not self:
+-            raise KeyError('dictionary is empty')
+-        if last:
+-            key = reversed(self).next()
+-        else:
+-            key = iter(self).next()
+-        value = self.pop(key)
+-        return key, value
+-
+-    def __reduce__(self):
+-        items = [[k, self[k]] for k in self]
+-        tmp = self.__map, self.__end
+-        del self.__map, self.__end
+-        inst_dict = vars(self).copy()
+-        self.__map, self.__end = tmp
+-        if inst_dict:
+-            return (self.__class__, (items,), inst_dict)
+-        return self.__class__, (items,)
+-
+-    def keys(self):
+-        return list(self)
+-
+-    setdefault = DictMixin.setdefault
+-    update = DictMixin.update
+-    pop = DictMixin.pop
+-    values = DictMixin.values
+-    items = DictMixin.items
+-    iterkeys = DictMixin.iterkeys
+-    itervalues = DictMixin.itervalues
+-    iteritems = DictMixin.iteritems
+-
+-    def __repr__(self):
+-        if not self:
+-            return '%s()' % (self.__class__.__name__,)
+-        return '%s(%r)' % (self.__class__.__name__, self.items())
+-
+-    def copy(self):
+-        return self.__class__(self)
+-
+-    @classmethod
+-    def fromkeys(cls, iterable, value=None):
+-        d = cls()
+-        for key in iterable:
+-            d[key] = value
+-        return d
+-
+-    def __eq__(self, other):
+-        if isinstance(other, OrderedDict):
+-            if len(self) != len(other):
+-                return False
+-            for p, q in  zip(self.items(), other.items()):
+-                if p != q:
+-                    return False
+-            return True
+-        return dict.__eq__(self, other)
+-
+-    def __ne__(self, other):
+-        return not self == other
+diff --git a/sleekxmpp/thirdparty/socks.py b/sleekxmpp/thirdparty/socks.py
+deleted file mode 100644
+index 34090d5..0000000
+--- a/sleekxmpp/thirdparty/socks.py
++++ /dev/null
+@@ -1,387 +0,0 @@
+-"""SocksiPy - Python SOCKS module.
+-Version 1.00
+-
+-Copyright 2006 Dan-Haim. All rights reserved.
+-
+-Redistribution and use in source and binary forms, with or without modification,
+-are permitted provided that the following conditions are met:
+-1. Redistributions of source code must retain the above copyright notice, this
+-   list of conditions and the following disclaimer.
+-2. Redistributions in binary form must reproduce the above copyright notice,
+-   this list of conditions and the following disclaimer in the documentation
+-   and/or other materials provided with the distribution.
+-3. Neither the name of Dan Haim nor the names of his contributors may be used
+-   to endorse or promote products derived from this software without specific
+-   prior written permission.
+-
+-THIS SOFTWARE IS PROVIDED BY DAN HAIM "AS IS" AND ANY EXPRESS OR IMPLIED
+-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+-EVENT SHALL DAN HAIM OR HIS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA
+-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMANGE.
+-
+-
+-This module provides a standard socket-like interface for Python
+-for tunneling connections through SOCKS proxies.
+-
+-"""
+-
+-"""
+-
+-Minor modifications made by Christopher Gilbert (http://motomastyle.com/)
+-for use in PyLoris (http://pyloris.sourceforge.net/)
+-
+-Minor modifications made by Mario Vilas (http://breakingcode.wordpress.com/)
+-mainly to merge bug fixes found in Sourceforge
+-
+-Minor modifications made by Eugene Dementiev (http://www.dementiev.eu/)
+-
+-"""
+-
+-import socket
+-import struct
+-import sys
+-
+-PROXY_TYPE_SOCKS4 = 1
+-PROXY_TYPE_SOCKS5 = 2
+-PROXY_TYPE_HTTP = 3
+-
+-_defaultproxy = None
+-_orgsocket = socket.socket
+-
+-class ProxyError(Exception): pass
+-class GeneralProxyError(ProxyError): pass
+-class Socks5AuthError(ProxyError): pass
+-class Socks5Error(ProxyError): pass
+-class Socks4Error(ProxyError): pass
+-class HTTPError(ProxyError): pass
+-
+-_generalerrors = ("success",
+-    "invalid data",
+-    "not connected",
+-    "not available",
+-    "bad proxy type",
+-    "bad input")
+-
+-_socks5errors = ("succeeded",
+-    "general SOCKS server failure",
+-    "connection not allowed by ruleset",
+-    "Network unreachable",
+-    "Host unreachable",
+-    "Connection refused",
+-    "TTL expired",
+-    "Command not supported",
+-    "Address type not supported",
+-    "Unknown error")
+-
+-_socks5autherrors = ("succeeded",
+-    "authentication is required",
+-    "all offered authentication methods were rejected",
+-    "unknown username or invalid password",
+-    "unknown error")
+-
+-_socks4errors = ("request granted",
+-    "request rejected or failed",
+-    "request rejected because SOCKS server cannot connect to identd on the client",
+-    "request rejected because the client program and identd report different user-ids",
+-    "unknown error")
+-
+-def setdefaultproxy(proxytype=None, addr=None, port=None, rdns=True, username=None, password=None):
+-    """setdefaultproxy(proxytype, addr[, port[, rdns[, username[, password]]]])
+-    Sets a default proxy which all further socksocket objects will use,
+-    unless explicitly changed.
+-    """
+-    global _defaultproxy
+-    _defaultproxy = (proxytype, addr, port, rdns, username, password)
+-
+-def wrapmodule(module):
+-    """wrapmodule(module)
+-    Attempts to replace a module's socket library with a SOCKS socket. Must set
+-    a default proxy using setdefaultproxy(...) first.
+-    This will only work on modules that import socket directly into the namespace;
+-    most of the Python Standard Library falls into this category.
+-    """
+-    if _defaultproxy != None:
+-        module.socket.socket = socksocket
+-    else:
+-        raise GeneralProxyError((4, "no proxy specified"))
+-
+-class socksocket(socket.socket):
+-    """socksocket([family[, type[, proto]]]) -> socket object
+-    Open a SOCKS enabled socket. The parameters are the same as
+-    those of the standard socket init. In order for SOCKS to work,
+-    you must specify family=AF_INET, type=SOCK_STREAM and proto=0.
+-    """
+-
+-    def __init__(self, family=socket.AF_INET, type=socket.SOCK_STREAM, proto=0, _sock=None):
+-        _orgsocket.__init__(self, family, type, proto, _sock)
+-        if _defaultproxy != None:
+-            self.__proxy = _defaultproxy
+-        else:
+-            self.__proxy = (None, None, None, None, None, None)
+-        self.__proxysockname = None
+-        self.__proxypeername = None
+-
+-    def __recvall(self, count):
+-        """__recvall(count) -> data
+-        Receive EXACTLY the number of bytes requested from the socket.
+-        Blocks until the required number of bytes have been received.
+-        """
+-        data = self.recv(count)
+-        while len(data) < count:
+-            d = self.recv(count-len(data))
+-            if not d: raise GeneralProxyError((0, "connection closed unexpectedly"))
+-            data = data + d
+-        return data
+-
+-    def setproxy(self, proxytype=None, addr=None, port=None, rdns=True, username=None, password=None):
+-        """setproxy(proxytype, addr[, port[, rdns[, username[, password]]]])
+-        Sets the proxy to be used.
+-        proxytype -    The type of the proxy to be used. Three types
+-                are supported: PROXY_TYPE_SOCKS4 (including socks4a),
+-                PROXY_TYPE_SOCKS5 and PROXY_TYPE_HTTP
+-        addr -        The address of the server (IP or DNS).
+-        port -        The port of the server. Defaults to 1080 for SOCKS
+-                servers and 8080 for HTTP proxy servers.
+-        rdns -        Should DNS queries be preformed on the remote side
+-                (rather than the local side). The default is True.
+-                Note: This has no effect with SOCKS4 servers.
+-        username -    Username to authenticate with to the server.
+-                The default is no authentication.
+-        password -    Password to authenticate with to the server.
+-                Only relevant when username is also provided.
+-        """
+-        self.__proxy = (proxytype, addr, port, rdns, username, password)
+-
+-    def __negotiatesocks5(self, destaddr, destport):
+-        """__negotiatesocks5(self,destaddr,destport)
+-        Negotiates a connection through a SOCKS5 server.
+-        """
+-        # First we'll send the authentication packages we support.
+-        if (self.__proxy[4]!=None) and (self.__proxy[5]!=None):
+-            # The username/password details were supplied to the
+-            # setproxy method so we support the USERNAME/PASSWORD
+-            # authentication (in addition to the standard none).
+-            self.sendall(struct.pack('BBBB', 0x05, 0x02, 0x00, 0x02))
+-        else:
+-            # No username/password were entered, therefore we
+-            # only support connections with no authentication.
+-            self.sendall(struct.pack('BBB', 0x05, 0x01, 0x00))
+-        # We'll receive the server's response to determine which
+-        # method was selected
+-        chosenauth = self.__recvall(2)
+-        if chosenauth[0:1] != chr(0x05).encode():
+-            self.close()
+-            raise GeneralProxyError((1, _generalerrors[1]))
+-        # Check the chosen authentication method
+-        if chosenauth[1:2] == chr(0x00).encode():
+-            # No authentication is required
+-            pass
+-        elif chosenauth[1:2] == chr(0x02).encode():
+-            # Okay, we need to perform a basic username/password
+-            # authentication.
+-            self.sendall(chr(0x01).encode() + chr(len(self.__proxy[4])) + self.__proxy[4] + chr(len(self.__proxy[5])) + self.__proxy[5])
+-            authstat = self.__recvall(2)
+-            if authstat[0:1] != chr(0x01).encode():
+-                # Bad response
+-                self.close()
+-                raise GeneralProxyError((1, _generalerrors[1]))
+-            if authstat[1:2] != chr(0x00).encode():
+-                # Authentication failed
+-                self.close()
+-                raise Socks5AuthError((3, _socks5autherrors[3]))
+-            # Authentication succeeded
+-        else:
+-            # Reaching here is always bad
+-            self.close()
+-            if chosenauth[1] == chr(0xFF).encode():
+-                raise Socks5AuthError((2, _socks5autherrors[2]))
+-            else:
+-                raise GeneralProxyError((1, _generalerrors[1]))
+-        # Now we can request the actual connection
+-        req = struct.pack('BBB', 0x05, 0x01, 0x00)
+-        # If the given destination address is an IP address, we'll
+-        # use the IPv4 address request even if remote resolving was specified.
+-        try:
+-            ipaddr = socket.inet_aton(destaddr)
+-            req = req + chr(0x01).encode() + ipaddr
+-        except socket.error:
+-            # Well it's not an IP number,  so it's probably a DNS name.
+-            if self.__proxy[3]:
+-                # Resolve remotely
+-                ipaddr = None
+-                req = req + chr(0x03).encode() + chr(len(destaddr)).encode() + destaddr.encode()
+-            else:
+-                # Resolve locally
+-                ipaddr = socket.inet_aton(socket.gethostbyname(destaddr))
+-                req = req + chr(0x01).encode() + ipaddr
+-        req += struct.pack(">H", destport)
+-        self.sendall(req)
+-        # Get the response
+-        resp = self.__recvall(4)
+-        if resp[0:1] != chr(0x05).encode():
+-            self.close()
+-            raise GeneralProxyError((1, _generalerrors[1]))
+-        elif resp[1:2] != chr(0x00).encode():
+-            # Connection failed
+-            self.close()
+-            if ord(resp[1:2])<=8:
+-                raise Socks5Error((ord(resp[1:2]), _socks5errors[ord(resp[1:2])]))
+-            else:
+-                raise Socks5Error((9, _socks5errors[9]))
+-        # Get the bound address/port
+-        elif resp[3:4] == chr(0x01).encode():
+-            boundaddr = self.__recvall(4)
+-        elif resp[3:4] == chr(0x03).encode():
+-            resp = resp + self.recv(1)
+-            boundaddr = self.__recvall(ord(resp[4:5]))
+-        else:
+-            self.close()
+-            raise GeneralProxyError((1,_generalerrors[1]))
+-        boundport = struct.unpack(">H", self.__recvall(2))[0]
+-        self.__proxysockname = (boundaddr, boundport)
+-        if ipaddr != None:
+-            self.__proxypeername = (socket.inet_ntoa(ipaddr), destport)
+-        else:
+-            self.__proxypeername = (destaddr, destport)
+-
+-    def getproxysockname(self):
+-        """getsockname() -> address info
+-        Returns the bound IP address and port number at the proxy.
+-        """
+-        return self.__proxysockname
+-
+-    def getproxypeername(self):
+-        """getproxypeername() -> address info
+-        Returns the IP and port number of the proxy.
+-        """
+-        return _orgsocket.getpeername(self)
+-
+-    def getpeername(self):
+-        """getpeername() -> address info
+-        Returns the IP address and port number of the destination
+-        machine (note: getproxypeername returns the proxy)
+-        """
+-        return self.__proxypeername
+-
+-    def __negotiatesocks4(self,destaddr,destport):
+-        """__negotiatesocks4(self,destaddr,destport)
+-        Negotiates a connection through a SOCKS4 server.
+-        """
+-        # Check if the destination address provided is an IP address
+-        rmtrslv = False
+-        try:
+-            ipaddr = socket.inet_aton(destaddr)
+-        except socket.error:
+-            # It's a DNS name. Check where it should be resolved.
+-            if self.__proxy[3]:
+-                ipaddr = struct.pack("BBBB", 0x00, 0x00, 0x00, 0x01)
+-                rmtrslv = True
+-            else:
+-                ipaddr = socket.inet_aton(socket.gethostbyname(destaddr))
+-        # Construct the request packet
+-        req = struct.pack(">BBH", 0x04, 0x01, destport) + ipaddr
+-        # The username parameter is considered userid for SOCKS4
+-        if self.__proxy[4] != None:
+-            req = req + self.__proxy[4]
+-        req += chr(0x00).encode()
+-        # DNS name if remote resolving is required
+-        # NOTE: This is actually an extension to the SOCKS4 protocol
+-        # called SOCKS4A and may not be supported in all cases.
+-        if rmtrslv:
+-            req = req + destaddr + chr(0x00).encode()
+-        self.sendall(req)
+-        # Get the response from the server
+-        resp = self.__recvall(8)
+-        if resp[0:1] != chr(0x00).encode():
+-            # Bad data
+-            self.close()
+-            raise GeneralProxyError((1,_generalerrors[1]))
+-        if resp[1:2] != chr(0x5A).encode():
+-            # Server returned an error
+-            self.close()
+-            if ord(resp[1:2]) in (91, 92, 93):
+-                self.close()
+-                raise Socks4Error((ord(resp[1:2]), _socks4errors[ord(resp[1:2]) - 90]))
+-            else:
+-                raise Socks4Error((94, _socks4errors[4]))
+-        # Get the bound address/port
+-        self.__proxysockname = (socket.inet_ntoa(resp[4:]), struct.unpack(">H", resp[2:4])[0])
+-        if rmtrslv != None:
+-            self.__proxypeername = (socket.inet_ntoa(ipaddr), destport)
+-        else:
+-            self.__proxypeername = (destaddr, destport)
+-
+-    def __negotiatehttp(self, destaddr, destport):
+-        """__negotiatehttp(self,destaddr,destport)
+-        Negotiates a connection through an HTTP server.
+-        """
+-        # If we need to resolve locally, we do this now
+-        if not self.__proxy[3]:
+-            addr = socket.gethostbyname(destaddr)
+-        else:
+-            addr = destaddr
+-        self.sendall(("CONNECT " + addr + ":" + str(destport) + " HTTP/1.1\r\n" + "Host: " + destaddr + "\r\n\r\n").encode())
+-        # We read the response until we get the string "\r\n\r\n"
+-        resp = self.recv(1)
+-        while resp.find("\r\n\r\n".encode()) == -1:
+-            recv = self.recv(1)
+-            if not recv:
+-                raise GeneralProxyError((1, _generalerrors[1]))
+-            resp = resp + recv
+-        # We just need the first line to check if the connection
+-        # was successful
+-        statusline = resp.splitlines()[0].split(" ".encode(), 2)
+-        if statusline[0] not in ("HTTP/1.0".encode(), "HTTP/1.1".encode()):
+-            self.close()
+-            raise GeneralProxyError((1, _generalerrors[1]))
+-        try:
+-            statuscode = int(statusline[1])
+-        except ValueError:
+-            self.close()
+-            raise GeneralProxyError((1, _generalerrors[1]))
+-        if statuscode != 200:
+-            self.close()
+-            raise HTTPError((statuscode, statusline[2]))
+-        self.__proxysockname = ("0.0.0.0", 0)
+-        self.__proxypeername = (addr, destport)
+-
+-    def connect(self, destpair):
+-        """connect(self, despair)
+-        Connects to the specified destination through a proxy.
+-        destpar - A tuple of the IP/DNS address and the port number.
+-        (identical to socket's connect).
+-        To select the proxy server use setproxy().
+-        """
+-        # Do a minimal input check first
+-        if (not type(destpair) in (list,tuple)) or (len(destpair) < 2) or (type(destpair[0]) != type('')) or (type(destpair[1]) != int):
+-            raise GeneralProxyError((5, _generalerrors[5]))
+-        if self.__proxy[0] == PROXY_TYPE_SOCKS5:
+-            if self.__proxy[2] != None:
+-                portnum = self.__proxy[2]
+-            else:
+-                portnum = 1080
+-            _orgsocket.connect(self, (self.__proxy[1], portnum))
+-            self.__negotiatesocks5(destpair[0], destpair[1])
+-        elif self.__proxy[0] == PROXY_TYPE_SOCKS4:
+-            if self.__proxy[2] != None:
+-                portnum = self.__proxy[2]
+-            else:
+-                portnum = 1080
+-            _orgsocket.connect(self,(self.__proxy[1], portnum))
+-            self.__negotiatesocks4(destpair[0], destpair[1])
+-        elif self.__proxy[0] == PROXY_TYPE_HTTP:
+-            if self.__proxy[2] != None:
+-                portnum = self.__proxy[2]
+-            else:
+-                portnum = 8080
+-            _orgsocket.connect(self,(self.__proxy[1], portnum))
+-            self.__negotiatehttp(destpair[0], destpair[1])
+-        elif self.__proxy[0] == None:
+-            _orgsocket.connect(self, (destpair[0], destpair[1]))
+-        else:
+-            raise GeneralProxyError((4, _generalerrors[4]))
+diff --git a/sleekxmpp/xmlstream/stanzabase.py b/sleekxmpp/xmlstream/stanzabase.py
+index 11c8dd6..4e8079b 100644
+--- a/sleekxmpp/xmlstream/stanzabase.py
++++ b/sleekxmpp/xmlstream/stanzabase.py
+@@ -22,7 +22,7 @@ from xml.etree import cElementTree as ET
+ from sleekxmpp.util import safedict
+ from sleekxmpp.xmlstream import JID
+ from sleekxmpp.xmlstream.tostring import tostring
+-from sleekxmpp.thirdparty import OrderedDict
++from collections import OrderedDict
+ 
+ 
+ log = logging.getLogger(__name__)
+diff --git a/tests/test_stanza_element.py b/tests/test_stanza_element.py
+index e678b56..e9aa83d 100644
+--- a/tests/test_stanza_element.py
++++ b/tests/test_stanza_element.py
+@@ -1,7 +1,7 @@
+ import unittest
+ from sleekxmpp.test import SleekTest
+ from sleekxmpp.xmlstream.stanzabase import ElementBase, register_stanza_plugin, ET
+-from sleekxmpp.thirdparty import OrderedDict
++from collections import OrderedDict
+ 
+ 
+ class TestElementBase(SleekTest):
+diff --git a/tests/test_stanza_xep_0004.py b/tests/test_stanza_xep_0004.py
+index 9056c66..bb25d4e 100644
+--- a/tests/test_stanza_xep_0004.py
++++ b/tests/test_stanza_xep_0004.py
+@@ -1,7 +1,7 @@
+ import unittest
+ from sleekxmpp import Message
+ from sleekxmpp.test import SleekTest
+-from sleekxmpp.thirdparty import OrderedDict
++from collections import OrderedDict
+ 
+ import sleekxmpp.plugins.xep_0004 as xep_0004
+ from sleekxmpp.xmlstream import register_stanza_plugin

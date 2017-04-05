@@ -1,0 +1,24 @@
+Description: Use ssl.get_protocol_name() to find out which TLS version is
+ in use (allows the latest TLS versions to be used as well as any future
+ versions).
+Author: Chris Snijder <chris@greenhost.nl>
+Origin: upstream, https://github.com/fritzy/SleekXMPP/commit/6ebcf6b60d879e31e41bac58ba7db6ea760579b9
+Bug-Debian: https://bugs.debian.org/851900
+Last-Update: 2017-04-02
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/sleekxmpp/xmlstream/xmlstream.py
++++ b/sleekxmpp/xmlstream/xmlstream.py
+@@ -839,8 +839,10 @@ def start_tls(self):
+         to be restarted.
+         """
+         log.info("Negotiating TLS")
+-        ssl_versions = {3: 'TLS 1.0', 1: 'SSL 3', 2: 'SSL 2/3'}
+-        log.info("Using SSL version: %s", ssl_versions[self.ssl_version])
++        log.info(
++            "Using SSL version: %s",
++            ssl.get_protocol_name(self.ssl_version).replace('PROTOCOL_', '', 1)
++        )
+         if self.ca_certs is None:
+             cert_policy = ssl.CERT_NONE
+         else:
